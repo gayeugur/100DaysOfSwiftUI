@@ -9,86 +9,73 @@ import SwiftUI
 struct LengthConverterView: View {
     @State private var fromUnitIndex = 0
     @State private var toUnitIndex = 1
-    @State private var inputValue = ""
-    @State private var outputValue = ""
+    @State private var inputValue = 0.0
     
-    let lengthUnits = ["Meters", "Centimeters", "Feet", "Inches"]
+    private let unitNames = ["Meters", "Centimeters", "Feet", "Inches"]
+    private let unitTypes: [UnitLength] = [
+        .meters,
+        .centimeters,
+        .feet,
+        .inches
+    ]
     
     var convertedValue: Double {
-        let input = Double(inputValue) ?? 0
-        let inputUnit = getUnit(for: fromUnitIndex)
-        let outputUnit = getUnit(for: toUnitIndex)
+        let baseMeasurement = Measurement(
+            value: inputValue,
+            unit: unitTypes[fromUnitIndex]
+        )
         
-        let baseMeasurement = Measurement(value: input, unit: inputUnit)
-        let convertedMeasurement = baseMeasurement.converted(to: outputUnit)
-        
-        return convertedMeasurement.value
-    }
-    
-    func getUnit(for index: Int) -> UnitLength {
-        switch index {
-        case 0:
-            return .meters
-        case 1:
-            return .centimeters
-        case 2:
-            return .feet
-        case 3:
-            return .inches
-        default:
-            return .meters
-        }
+        return baseMeasurement
+            .converted(to: unitTypes[toUnitIndex])
+            .value
     }
     
     var body: some View {
         NavigationStack {
-            VStack {
-                    Text("Unit to Convert")
-                    Picker("Unit to Convert", selection: $fromUnitIndex) {
-                        ForEach(0..<lengthUnits.count) {
-                            Text(self.lengthUnits[$0])
+            Form {
+                Section("From") {
+                    Picker("Unit", selection: $fromUnitIndex) {
+                        ForEach(unitNames.indices, id: \.self) { index in
+                            Text(unitNames[index])
                         }
                     }
                     .pickerStyle(.segmented)
-                .padding()
+                }
                 
-                
-                Picker("Dönüştürülecek Birim", selection: $toUnitIndex) {
-                    ForEach(0..<lengthUnits.count) {
-                        Text(self.lengthUnits[$0])
+                Section("To") {
+                    Picker("Unit", selection: $toUnitIndex) {
+                        ForEach(unitNames.indices, id: \.self) { index in
+                            Text(unitNames[index])
+                        }
                     }
-                }
-                .pickerStyle(.segmented)
-                .padding()
-                
-                TextField("Write lenght...", text: $inputValue)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-                
-                Button(action: {
-                    outputValue = String(format: "%.2f", convertedValue)
-                }) {
-                    Text("Convert")
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(Color.blue)
-                        .cornerRadius(8)
+                    .pickerStyle(.segmented)
                 }
                 
-                Text("Result: \(outputValue)")
-                    .padding()
+                Section("Value") {
+                    TextField(
+                        "Enter length",
+                        value: $inputValue,
+                        format: .number
+                    )
+                    .keyboardType(.decimalPad)
+                }
                 
-                Spacer()
+                Section("Result") {
+                    Text(
+                        convertedValue,
+                        format: .number.precision(.fractionLength(2))
+                    )
+                }
             }
-            .padding()
+            .navigationTitle("Length Converter")
         }
     }
 }
 
+
 struct ContentView: View {
     var body: some View {
         LengthConverterView()
-            .navigationBarTitle("Length Converter")
     }
 }
 
