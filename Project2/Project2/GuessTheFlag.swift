@@ -75,8 +75,7 @@ extension ContentView {
 
     var titleSection: some View {
         Text("Guess the Flag")
-            .font(.largeTitle.bold())
-            .foregroundStyle(.white)
+            .bigBlueTitle()
     }
     
     var flagSection: some View {
@@ -150,6 +149,21 @@ extension ContentView {
     func nextQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+    }
+}
+
+
+struct BigBlueTitle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.largeTitle.bold())
+            .foregroundStyle(.blue)
+    }
+}
+
+extension View {
+    func bigBlueTitle() -> some View {
+        modifier(BigBlueTitle())
     }
 }
 
