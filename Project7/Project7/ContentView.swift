@@ -17,6 +17,7 @@ struct ExpenseItem: Identifiable, Codable {
 
 @Observable
 class Expenses {
+    
     var items = [ExpenseItem]() {
         didSet {
             if let encoded = try? JSONEncoder().encode(items) {
@@ -24,7 +25,7 @@ class Expenses {
             }
         }
     }
-
+    
     init() {
         if let savedItems = UserDefaults.standard.data(forKey: "Items") {
             if let decodedItems = try? JSONDecoder().decode([ExpenseItem].self, from: savedItems) {
@@ -32,16 +33,15 @@ class Expenses {
                 return
             }
         }
-
+        
         items = []
     }
 }
 
 struct ContentView: View {
     @State private var expenses = Expenses()
-
     @State private var showingAddExpense = false
-
+    
     var body: some View {
         NavigationStack {
             List {
@@ -50,13 +50,15 @@ struct ContentView: View {
                         VStack(alignment: .leading) {
                             Text(item.name)
                                 .font(.headline)
-
+                            
                             Text(item.type)
                         }
-
+                        
                         Spacer()
-
+                        
                         Text(item.amount, format: .currency(code: item.currencyCode))
+                            .foregroundStyle(amountColor(for: item.amount))
+                            .font(amountFont(for: item.amount))
                     }
                 }
                 .onDelete(perform: removeItems)
@@ -72,9 +74,29 @@ struct ContentView: View {
             }
         }
     }
-
+    
     func removeItems(at offsets: IndexSet) {
         expenses.items.remove(atOffsets: offsets)
+    }
+    
+    func amountColor(for amount: Double) -> Color {
+        if amount < 10 {
+            return .green
+        } else if amount < 100 {
+            return .orange
+        } else {
+            return .red
+        }
+    }
+    
+    func amountFont(for amount: Double) -> Font {
+        if amount < 10 {
+            return .body
+        } else if amount < 100 {
+            return .headline
+        } else {
+            return .title3
+        }
     }
 }
 
